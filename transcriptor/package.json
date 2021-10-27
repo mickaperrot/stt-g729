@@ -1,0 +1,23 @@
+{
+    "name": "transcript",
+    "description": "Transcript wav files using Google STT.",
+    "version": "1.0.0",
+    "private": true,
+    "main": "index.js",
+    "scripts": {
+      "start": "node index.js"
+    },
+    "engines": {
+      "node": ">= 12.0.0"
+    },
+    "author": "Mickaël Perrot",
+    "dependencies": {
+      "express": "^4.17.1",
+      "@google-cloud/storage": "^5.0.0",
+      "@google-cloud/speech": "^4.9.0",
+      "fs": "^0.0.1-security",
+      "csv-writer": "^1.6.0",
+      "util": "^0.12.4",
+      "path": "^0.12.7"
+    }
+  }
