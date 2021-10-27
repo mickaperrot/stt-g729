@@ -1,0 +1,22 @@
+{
+    "name": "convert-g729",
+    "description": "Convert G-729 wav files to PCM.",
+    "version": "1.0.0",
+    "private": true,
+    "main": "index.js",
+    "scripts": {
+      "start": "node index.js"
+    },
+    "engines": {
+      "node": ">= 12.0.0"
+    },
+    "author": "Mickaël Perrot",
+    "dependencies": {
+      "express": "^4.17.1",
+      "fluent-ffmpeg": "^2.1.2",
+      "@google-cloud/storage": "^5.0.0",
+      "util": "^0.12.4",
+      "fs": "^0.0.1-security",
+      "path": "^0.12.7"      
+    }
+  }
