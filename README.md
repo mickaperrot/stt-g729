@@ -10,12 +10,35 @@ How this works:
 5. The **transcriptor** runs the Speech-to-Text API and uploads the transcriptions to a Google Cloud Storage bucket in CSV format
 
 ## Enable the Speech-to-Text API
-
+Enable the API:
+```
+gcloud services enable speech.googleapis.com
+```
 ## Create a service account
-
+Create a service account:
+```
+gcloud iam service-accounts create my-service-account
+```
 ## Create the Google Cloud Storage buckets
-
+Create 3 buckets:
+```
+gsutil mb bucket-for-original-audio-files -l EUROPE-WEST1
+gsutil mb bucket-for-converted-audio-files -l EUROPE-WEST1
+gsutil mb bucket-for-transcriptions -l EUROPE-WEST1
+```
+Grant the service account permission to write to the buckets:
+```
+gsutil iam ch serviceAccount:my-service-account-email:roles/storage.objectAdmin gs://bucket-for-original-audio-files
+gsutil iam ch serviceAccount:my-service-account-email:roles/storage.objectAdmin gs://bucket-for-converted-audio-files
+gsutil iam ch serviceAccount:my-service-account-email:roles/storage.objectAdmin gs://bucket-for-transcriptions
+```
 ## Deploy the converter in Cloud Run
+Grant the service account the permission to invoke Cloud Run:
+```
+gcloud run services add-iam-policy-binding pubsub-tutorial \
+   --member=serviceAccount:cloud-run-pubsub-invoker@PROJECT_ID.iam.gserviceaccount.com \
+   --role=roles/run.invoker
+```
 
 ## Deploy the transcriptor in Cloud Run
 
