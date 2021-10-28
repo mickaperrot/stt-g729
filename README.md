@@ -10,25 +10,25 @@ How this works:
 5. The **transcriptor** runs the Speech-to-Text API and uploads the transcriptions to a Google Cloud Storage bucket in CSV format
 
 ## Enable the APIs
-Enable the Speech-to-Text API:
+Enable the Speech-to-Text & Cloud Run APIs:
 ```
-gcloud services enable speech.googleapis.com
-```
-Enable the Cloud Run API:
-```
-gcloud services enable run.googleapis.com
+gcloud services enable speech.googleapis.com run.googleapis.com
 ```
 ## Create a service account
 Create a service account:
 ```
 gcloud iam service-accounts create my-service-account
 ```
+Retreive the service account email:
+```
+gcloud iam service-accounts list
+```
 ## Create the Google Cloud Storage buckets
 Create 3 buckets:
 ```
-gsutil mb bucket-for-original-audio-files -l EUROPE-WEST1
-gsutil mb bucket-for-converted-audio-files -l EUROPE-WEST1
-gsutil mb bucket-for-transcriptions -l EUROPE-WEST1
+gsutil mb -l EUROPE-WEST1 bucket-for-original-audio-files
+gsutil mb -l EUROPE-WEST1 bucket-for-converted-audio-files
+gsutil mb -l EUROPE-WEST1 bucket-for-transcriptions
 ```
 Grant the service account permission to write to the buckets:
 ```
@@ -49,6 +49,7 @@ gcloud run deploy converter \
 Grant the service account access to the Cloud Run deployment:
 ```
 gcloud run services add-iam-policy-binding converter \
+   --region=europe-west1 \
    --member=serviceAccount:my-service-account-email \
    --role=roles/run.invoker
 ```
@@ -58,13 +59,14 @@ Deploy the transcriptor image to Cloud Run:
 gcloud run deploy transcriptor \
    --image=europe-west1-docker.pkg.dev/mickael-public-share/stt-g729/transcriptor \
    --service-account=my-service-account-email \
-   --set-env-vars=[DESTINATION_BUCKET=bucket-for-converted-audio-files] \
+   --set-env-vars=[DESTINATION_BUCKET=bucket-for-transcriptions] \
    --region=europe-west1 \
    --no-allow-unauthenticated
 ```
 Grant the service account access to the Cloud Run deployment:
 ```
 gcloud run services add-iam-policy-binding transcriptor \
+   --region=europe-west1 \
    --member=serviceAccount:my-service-account-email \
    --role=roles/run.invoker
 ```
@@ -75,7 +77,7 @@ gcloud pubsub topics create original-files-topic
 ```
 Create the Pub/Sub subscription:
 ```
-gcloud pubsub subscriptions create my-subscription --topic original-files-topic \
+gcloud pubsub subscriptions create original-files-subscription --topic original-files-topic \
    --push-endpoint=converterURL \
    --push-auth-service-account=my-service-account-email
 ```
@@ -90,7 +92,7 @@ gcloud pubsub topics create converted-files-topic
 ```
 Create the Pub/Sub subscription:
 ```
-gcloud pubsub subscriptions create my-subscription --topic converted-files-topic \
+gcloud pubsub subscriptions create converted-files-subscription --topic converted-files-topic \
    --push-endpoint=transcriptorURL \
    --push-auth-service-account=my-service-account-email
 ```
