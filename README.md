@@ -9,12 +9,13 @@ How this works:
 4. A Pub/Sub notification is sent to the **transcriptor** running in Cloud Run each time a file is uploaded to the bucket
 5. The **transcriptor** runs the Speech-to-Text API and uploads the transcriptions to a Google Cloud Storage bucket in CSV format
 
-## Enable the APIs
+## Installation
+### Enable the APIs
 Enable the Speech-to-Text & Cloud Run APIs:
 ```
 gcloud services enable speech.googleapis.com run.googleapis.com
 ```
-## Create a service account
+### Create a service account
 Create a service account:
 ```
 gcloud iam service-accounts create my-service-account
@@ -23,7 +24,7 @@ Retreive the service account email:
 ```
 gcloud iam service-accounts list
 ```
-## Create the Google Cloud Storage buckets
+### Create the Google Cloud Storage buckets
 Create 3 buckets:
 ```
 gsutil mb -l EUROPE-WEST1 bucket-for-original-audio-files
@@ -36,7 +37,7 @@ gsutil iam ch serviceAccount:my-service-account-email:roles/storage.objectAdmin 
 gsutil iam ch serviceAccount:my-service-account-email:roles/storage.objectAdmin gs://bucket-for-converted-audio-files
 gsutil iam ch serviceAccount:my-service-account-email:roles/storage.objectAdmin gs://bucket-for-transcriptions
 ```
-## Deploy the converter in Cloud Run
+### Deploy the converter in Cloud Run
 Deploy the converter image to Cloud Run:
 ```
 gcloud run deploy converter \
@@ -53,7 +54,7 @@ gcloud run services add-iam-policy-binding converter \
    --member=serviceAccount:my-service-account-email \
    --role=roles/run.invoker
 ```
-## Deploy the transcriptor in Cloud Run
+### Deploy the transcriptor in Cloud Run
 Deploy the transcriptor image to Cloud Run:
 ```
 gcloud run deploy transcriptor \
@@ -70,7 +71,7 @@ gcloud run services add-iam-policy-binding transcriptor \
    --member=serviceAccount:my-service-account-email \
    --role=roles/run.invoker
 ```
-## Create the Pub/Sub topic for original audio files
+### Create the Pub/Sub topic for original audio files
 Create the Pub/Sub topic:
 ```
 gcloud pubsub topics create original-files-topic
@@ -85,7 +86,7 @@ Enable Google Cloud Storage notifications:
 ```
 gsutil notification create -t original-files-topic -f json gs://bucket-for-original-audio-files
 ```
-## Create the Pub/Sub topic for converted audio files
+### Create the Pub/Sub topic for converted audio files
 Create the Pub/Sub topic:
 ```
 gcloud pubsub topics create converted-files-topic
@@ -100,3 +101,7 @@ Enable Google Cloud Storage notifications:
 ```
 gsutil notification create -t converted-files-topic -f json gs://bucket-for-converted-audio-files
 ```
+## Usage
+Go to the bucket created for original audio files and create a folder:
+![bucket](/img/bucket.png)
+Name the folder using the BCP-47 code of the source language making sure it is available in the supported languages for Cloud Speech-to-Text:
