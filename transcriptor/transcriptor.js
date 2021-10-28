@@ -8,7 +8,7 @@ const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 
 const {Storage} = require('@google-cloud/storage');
 const storage = new Storage();
-const DESTINATION_BUCKET = process.env.DESTINATION_BUCKET || "stt-g729-converted-audio";
+const DESTINATION_BUCKET = process.env.DESTINATION_BUCKET;
 
 const speech = require('@google-cloud/speech');
 const client = new speech.SpeechClient();
@@ -52,25 +52,24 @@ exports.syncRecognizeGCS = async (object) => {
   ];
 
   // Detects speech in the audio file
-let transcriptions = [];  
-  try{
-    const [resultDefault, resultPhone, resultPhoneEnhanced] = await Promise.all([client.recognize(requestArray[0]), client.recognize(requestArray[1]), client.recognize(requestArray[2])]);
-    transcriptions.push(resultDefault[0].results
-      .map(result => result.alternatives[0].transcript)
-      .join('.'));
-      transcriptions.push(resultPhone[0].results
-        .map(result => result.alternatives[0].transcript)
-        .join('.'));
-        transcriptions.push(resultPhoneEnhanced[0].results
-        .map(result => result.alternatives[0].transcript)
-        .join('.'));
-    console.log(`Default Transcription: ${transcriptions[0]}\nPhone Transcription: ${transcriptions[1]}\nPhone Enhanced Transcription: ${transcriptions[2]}`);
-  } catch (err) {
-      throw new Error(`Error while transcripting: ${err}`);
-  }
+let transcriptions = []; 
+const results = await Promise.allSettled([client.recognize(requestArray[0]), client.recognize(requestArray[1]), client.recognize(requestArray[2])]); 
+results.forEach(result => {
+    if(result.status == "fulfilled"){
+        transcriptions.push(result.value[0].results
+            .map(result => result.alternatives[0].transcript)
+            .join('.'));
+    }
+    if(result.status == "rejected"){
+        console.log(`Error while transcripting: ${result.reason}`);
+        transcriptions.push(null);
+    }
+});
+
+  const tmpFile = `/tmp/${path.basename(object.name, '.wav')}.csv`;
 
   const csvWriter = createCsvWriter({
-    path: `${path.basename(object.name, '.wav')}.csv`,
+    path: tmpFile,
     header: [
       {id: 'file', title: 'Audio file'},
       {id: 'default', title: 'Default model'},
@@ -79,11 +78,11 @@ let transcriptions = [];
     ]
   });
 
-  const gcsPath = `gs://${DESTINATION_BUCKET}/${path.basename(object.name, '.wav')}.csv`;
+  const gcsPath = `gs://${DESTINATION_BUCKET}/${object.name.slice(0, -4)}.csv`;
 
   const data = [
     {
-      file: gcsPath,
+      file: gcsUri,
       default: transcriptions[0],
       phone: transcriptions[1],
       enhanced: transcriptions[2]
@@ -99,7 +98,7 @@ let transcriptions = [];
 
   // Upload the CSV file into the bucket.
   try {
-    await storage.bucket(DESTINATION_BUCKET).upload(`${path.basename(object.name, '.wav')}.csv`, {destination: `${object.name.slice(0, -4)}.csv`});
+    await storage.bucket(DESTINATION_BUCKET).upload(tmpFile, {destination: `${object.name.slice(0, -4)}.csv`});
     console.log(`Uploaded CSV file to: ${gcsPath}`);
   } catch (err) {
     throw new Error(`Unable to upload CSV image to ${gcsPath}: ${err}`);
@@ -107,5 +106,5 @@ let transcriptions = [];
 
   // Delete the temporary files.
   const unlink = promisify(fs.unlink);
-  return unlink(`${path.basename(object.name, '.wav')}.csv`);
+  return unlink(tmpFile);
 };
