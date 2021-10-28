@@ -102,6 +102,17 @@ Enable Google Cloud Storage notifications:
 gsutil notification create -t converted-files-topic -f json gs://bucket-for-converted-audio-files
 ```
 ## Usage
-Go to the bucket created for original audio files and create a folder:
-![bucket](/img/bucket.png)
-Name the folder using the BCP-47 code of the source language making sure it is available in the supported languages for Cloud Speech-to-Text:
+From the Cloud Storage page go to the bucket created for original audio files:  
+![bucket_list](/img/bucket_list.png)  
+Create a folder for storing the audio files:  
+![create_folder](/img/create_folder.png)  
+Name the folder using the BCP-47 code of the source language making sure it is available in the supported languages for Cloud Speech-to-Text:  
+![folder_name](/img/folder_name.png)  
+Navigate inside the folder:  
+![folder_view](/img/folder_view.png)  
+Upload the audio files to be transcripted:  
+![files_upload](/img/files_upload.png)  
+The converted audio file will be available in the bucket for converted files shortly after the upload:  
+![converter](/img/converted.png)  
+The transcription file will be available in the bucket for transcription files shortly after the upload:  
+![transcription](/img/transcription.png) 
