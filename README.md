@@ -33,13 +33,21 @@ gsutil iam ch serviceAccount:my-service-account-email:roles/storage.objectAdmin 
 gsutil iam ch serviceAccount:my-service-account-email:roles/storage.objectAdmin gs://bucket-for-transcriptions
 ```
 ## Deploy the converter in Cloud Run
-Grant the service account the permission to invoke Cloud Run:
+Deploy the converter image to Cloud Run:
 ```
-gcloud run services add-iam-policy-binding pubsub-tutorial \
-   --member=serviceAccount:cloud-run-pubsub-invoker@PROJECT_ID.iam.gserviceaccount.com \
+gcloud run deploy converter \
+   --image=gcr.io/stt-g729/stt-g-729 \
+   --service-account=my-service-account-email \
+   --set-env-vars=[DESTINATION_BUCKET=bucket-for-converted-audio-files] \
+   --region=europe-west1
+   --no-allow-unauthenticated
+```
+Grant the service account access to the Cloud Run deployment:
+```
+gcloud run services add-iam-policy-binding converter \
+   --member=serviceAccount:my-service-account-email \
    --role=roles/run.invoker
 ```
-
 ## Deploy the transcriptor in Cloud Run
 
 ## Create the Pub/Sub topic
