@@ -4,7 +4,7 @@ const {promisify} = require('util');
 
 const {Storage} = require('@google-cloud/storage');
 const storage = new Storage();
-const DESTINATION_BUCKET = process.env.DESTINATION_BUCKET || "stt-g729-converted-audio";
+const DESTINATION_BUCKET = process.env.DESTINATION_BUCKET;
 
 const ffmpeg = require('fluent-ffmpeg');
 

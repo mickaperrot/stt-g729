@@ -1,3 +1,5 @@
+const path = require('path');
+
 const express = require('express');
 const app = express();
 // This middleware is available in Express v4.16.0 onwards
@@ -42,6 +44,14 @@ app.post('/', async (req, res) => {
         res.status(400).send(`Bad Request: ${msg}`);
         return;
       }
+      // Validate this is a wav file.
+      if (path.extname(data.name).toLowerCase() != ".wav") {
+        const msg =
+            'not a valid .wav file';
+        console.error(`error: ${msg}: ${data.name}`);
+        res.status(204).send(`Bad file format: ${msg}: ${data.name}`);
+        return;
+      }      
       // Convert the audio file
       try {
         await converter.convert(data);
