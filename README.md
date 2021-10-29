@@ -44,7 +44,7 @@ Deploy the converter image to Cloud Run:
 gcloud run deploy converter \
    --image=europe-west1-docker.pkg.dev/mickael-public-share/stt-g729/converter \
    --service-account=my-service-account-email \
-   --set-env-vars=[DESTINATION_BUCKET=bucket-for-converted-audio-files] \
+   --set-env-vars=DESTINATION_BUCKET=bucket-for-converted-audio-files \
    --region=europe-west1 \
    --no-allow-unauthenticated
 ```
@@ -61,7 +61,7 @@ Deploy the transcriptor image to Cloud Run:
 gcloud run deploy transcriptor \
    --image=europe-west1-docker.pkg.dev/mickael-public-share/stt-g729/transcriptor \
    --service-account=my-service-account-email \
-   --set-env-vars=[DESTINATION_BUCKET=bucket-for-transcriptions] \
+   --set-env-vars=DESTINATION_BUCKET=bucket-for-transcriptions \
    --region=europe-west1 \
    --no-allow-unauthenticated
 ```
