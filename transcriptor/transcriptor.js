@@ -26,46 +26,70 @@ exports.syncRecognizeGCS = async (object) => {
     uri: gcsUri
   };
 
-  const requestArray = [
+  const recognizeRequestArray = [
       {
-          config: {
-              languageCode: languageCode,
-              model: 'default'
-          },
-          audio: audio
+          name: "default",
+          request: {
+            config: {
+                languageCode: languageCode,
+                model: 'default'
+            },
+            audio: audio
+        }
       },
       {
-        config: {
-            languageCode: languageCode,
-            model: 'phone_call'
-        },
-        audio: audio
+        name: "phone",
+        request: {
+            config: {
+                languageCode: languageCode,
+                model: 'phone_call'
+            },
+            audio: audio
+          }
       },
       {
-        config: {
-            languageCode: languageCode,
-            model: 'phone_call',
-            useEnhanced: true
-        },
-        audio: audio
+        name: "phone enhanced",
+        request: {
+            config: {
+                languageCode: languageCode,
+                model: 'phone_call',
+                useEnhanced: true
+            },
+            audio: audio
+          }
       }
   ];
 
   // Detects speech in the audio file
-let transcriptions = []; 
-const results = await Promise.allSettled([client.recognize(requestArray[0]), client.recognize(requestArray[1]), client.recognize(requestArray[2])]); 
-results.forEach(result => {
-    if(result.status == "fulfilled"){
-        transcriptions.push(result.value[0].results
-            .map(result => result.alternatives[0].transcript)
-            .join('.'));
-    }
-    if(result.status == "rejected"){
-        console.log(`Error while transcripting: ${result.reason}`);
-        transcriptions.push(null);
-    }
-});
+let transcriptions = [];
 
+    async function getTranscript(recognizeRequest) {
+    let operation;        
+        try {
+            const longRunningRecognizeOperation = await client.longRunningRecognize(recognizeRequest.request);
+            console.log(`Long running operation successfull for: ${recognizeRequest.name}`);
+            operation = await longRunningRecognizeOperation[0].promise();
+        }
+        catch (err) {
+            console.log(`Long running operation error for: ${recognizeRequest.name} error:${err}`);
+            return Promise.resolve("");
+        }
+
+        try {
+            const results = operation[0].results;
+            // Do something
+            const transcript = results
+                .map(result => result.alternatives[0].transcript)
+                .join('.');
+            return Promise.resolve(transcript);
+        }
+        catch (err) {
+            console.log(`Long running operation error for: ${recognizeRequest.name} error:${error}`);
+            return Promise.resolve("");
+        }
+    }
+  
+  transcriptions = await Promise.all(recognizeRequestArray.map(recognizeRequest => getTranscript(recognizeRequest)));
   const tmpFile = `/tmp/${path.basename(object.name, '.wav')}.csv`;
 
   const csvWriter = createCsvWriter({
