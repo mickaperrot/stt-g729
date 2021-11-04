@@ -54,6 +54,7 @@ app.post('/', async (req, res) => {
       }      
       // Convert the audio file
       try {
+        console.log(`Trying to convert: gs://${data.bucket}/${data.name}`);
         await converter.convert(data);
         res.status(204).send();
       } catch (err) {

@@ -85,7 +85,7 @@ gcloud pubsub subscriptions create original-files-subscription --topic original-
 ```
 Enable Google Cloud Storage notifications:
 ```
-gsutil notification create -t original-files-topic -f json gs://bucket-for-original-audio-files
+gsutil notification create -t original-files-topic -f json -e OBJECT_FINALIZE gs://bucket-for-original-audio-files
 ```
 ### Create the Pub/Sub topic for converted audio files
 Create the Pub/Sub topic:
@@ -100,7 +100,7 @@ gcloud pubsub subscriptions create converted-files-subscription --topic converte
 ```
 Enable Google Cloud Storage notifications:
 ```
-gsutil notification create -t converted-files-topic -f json gs://bucket-for-converted-audio-files
+gsutil notification create -t converted-files-topic -f json -e OBJECT_FINALIZE gs://bucket-for-converted-audio-files
 ```
 ## Usage
 From the Cloud Storage page go to the bucket created for original audio files:  

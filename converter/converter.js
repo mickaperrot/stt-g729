@@ -41,13 +41,13 @@ exports.convert = async (object) => {
         throw new Error(`File conversion failed: ${err}`);
       }
     
-      // Upload the Blurred image back into the bucket.
+      // Upload the converted file to the bucket
       const gcsPath = `gs://${DESTINATION_BUCKET}/${file.name}`;
       try {
         await storage.bucket(DESTINATION_BUCKET).upload(tempConvertedLocalPath, {destination: file.name});
         console.log(`Uploaded converted file to: ${gcsPath}`);
       } catch (err) {
-        throw new Error(`Unable to upload blurred image to ${gcsPath}: ${err}`);
+        throw new Error(`Unable to upload converted file to ${gcsPath}: ${err}`);
       }
     
       // Delete the temporary files.

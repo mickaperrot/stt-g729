@@ -22,8 +22,7 @@ app.post('/', async (req, res) => {
       }
     
       // Decode the Pub/Sub message.
-      const pubSubMessage = req.body.message;
-      
+      const pubSubMessage = req.body.message;  
       let data;
       try {
         data = Buffer.from(pubSubMessage.data, 'base64').toString().trim();
@@ -43,8 +42,7 @@ app.post('/', async (req, res) => {
         console.error(`error: ${msg}`);
         res.status(400).send(`Bad Request: ${msg}`);
         return;
-      }
-
+      }      
       // Validate this is a wav file.
       if (path.extname(data.name).toLowerCase() != ".wav") {
         const msg =
@@ -55,6 +53,7 @@ app.post('/', async (req, res) => {
       }
       // Transcript the audio file
       try {
+        console.log(`Trying to transcript: gs://${data.bucket}/${data.name}`);
         await transcriptor.syncRecognizeGCS(data);
         res.status(204).send();
       } catch (err) {
